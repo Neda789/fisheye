@@ -1,0 +1,30 @@
+.header {
+  background-color: var(--light);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 60px;
+}
+h1 {
+  width: 400px;
+  height: 47px;
+  position: absolute;
+  top: 44px;
+  left: 850px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #901C1C;
+  margin: 0;
+}
+.logo {
+  position: absolute;
+  top: 44px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  left: 100px;
+  
+}
