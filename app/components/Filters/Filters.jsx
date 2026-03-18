@@ -1,47 +1,82 @@
-'use client';
+"use client";
+import { useState } from "react";
 
-import { useState } from 'react';
-
+// Composant de filtrage — reçoit la liste des médias et une fonction de callback pour le tri
 export default function Filters({ medias, onSort }) {
-  const [sortBy, setSortBy] = useState('likes');
+  // État du critère de tri actif (par défaut : popularité)
+  const [sortBy, setSortBy] = useState("likes");
+
+  // État pour contrôler l'ouverture/fermeture du menu déroulant
   const [isOpen, setIsOpen] = useState(false);
 
+  // Liste des options de tri disponibles
   const options = [
-    { value: 'likes', label: 'Popularité' },
-    { value: 'date', label: 'Date' },
-    { value: 'title', label: 'Titre' },
+    { value: "likes", label: "Popularité" },
+    { value: "date", label: "Date" },
+    { value: "title", label: "Titre" },
   ];
 
+  // Gestion du tri au clic sur une option
   const handleSort = (value) => {
-    setSortBy(value);
-    setIsOpen(false);
+    setSortBy(value); // Met à jour le critère actif
+    setIsOpen(false); // Ferme le menu déroulant
+
+    // Crée une copie triée du tableau de médias selon le critère choisi
     const sorted = [...medias].sort((a, b) => {
-      if (value === 'likes') return b.likes - a.likes;
-      if (value === 'date') return new Date(b.date) - new Date(a.date);
-      if (value === 'title') return a.title.localeCompare(b.title);
+      if (value === "likes") return b.likes - a.likes; // Tri par popularité décroissante
+      if (value === "date") return new Date(b.date) - new Date(a.date); // Tri par date décroissante
+      if (value === "title") return a.title.localeCompare(b.title); // Tri alphabétique
+      return 0;
     });
+
+    // Envoie le tableau trié au composant parent
     onSort(sorted);
   };
 
+  // Récupère le label de l'option actuellement sélectionnée
+  const currentLabel = options.find((o) => o.value === sortBy)?.label;
+
   return (
     <div className="sort-container">
-      <label>Trier par</label>
-      <div className="custom-select">
-        <div className="custom-select-selected" onClick={() => setIsOpen(!isOpen)}>
-          {options.find(o => o.value === sortBy)?.label}
-          <span className="arrow">{isOpen ? '∧' : '∨'}</span>
-        </div>
+      {/* Label accessible lié au bouton via aria-labelledby */}
+      <span id="sort-label" className="sort-label">
+        Trier par
+      </span>
+
+      {/* Menu déroulant personnalisé — classe is-open ajoutée dynamiquement */}
+      <div className={`custom-select ${isOpen ? "is-open" : ""}`}>
+        {/* Bouton principal qui affiche l'option sélectionnée */}
+        <button
+          className="select-button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          aria-labelledby="sort-label"
+        >
+          {currentLabel}
+          {/* Flèche qui change de direction selon l'état du menu */}
+          <span className={`arrow ${isOpen ? "up" : "down"}`}></span>
+        </button>
+
+        {/* Liste des options — affichée uniquement si le menu est ouvert */}
         {isOpen && (
-          <div className="custom-select-options">
-            {options.filter(o => o.value !== sortBy).map((option, index, arr) => (
-              <div
-                key={option.value}
-                className={`custom-select-option ${index !== arr.length - 1 ? 'with-border' : ''}`}
-                onClick={() => handleSort(option.value)}
-              >
-                {option.label}
-              </div>
-            ))}
+          <div className="options-list" role="listbox">
+            {options
+              .filter((option) => option.value !== sortBy) // Masque l'option déjà sélectionnée
+              .map((option) => (
+                <div
+                  key={option.value}
+                  className="option-item"
+                  role="option"
+                  tabIndex={0} // Permet la navigation au clavier
+                  onClick={() => handleSort(option.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleSort(option.value)
+                  } // Sélection via la touche Entrée
+                >
+                  {option.label}
+                </div>
+              ))}
           </div>
         )}
       </div>
