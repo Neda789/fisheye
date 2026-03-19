@@ -1,36 +1,73 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./ContactModal.css";
 
-// Composant modal de contact — reçoit le nom du photographe en prop
+// Composant de modale de contact
+// Reçoit le nom du photographe en propriété (prop)
 export default function ContactModal({ photographerName }) {
-  // État pour contrôler l'ouverture/fermeture de la modale
+  // État pour gérer l'ouverture et la fermeture de la modale
   const [isOpen, setIsOpen] = useState(false);
 
-  // États pour les champs du formulaire
+  // États pour stocker les valeurs des champs du formulaire
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
-  // Fonctions pour ouvrir et fermer la modale
+  // Référence vers la modale pour gérer le focus (accessibilité)
+  const modalRef = useRef(null);
+
+  // Fonction pour ouvrir la modale
   const openModal = () => setIsOpen(true);
+
+  // Fonction pour fermer la modale
   const closeModal = () => setIsOpen(false);
+
+  // Gestion de la touche ESC pour fermer la modale
+  useEffect(() => {
+    const handleEsc = (event) => {
+      // Vérifie si la touche pressée est "Escape"
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
+
+    // Ajoute l'écouteur uniquement si la modale est ouverte
+    if (isOpen) {
+      document.addEventListener("keydown", handleEsc);
+    }
+
+    // Nettoyage de l'écouteur pour éviter les fuites mémoire
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [isOpen]);
+
+  // Met le focus sur la modale lorsqu'elle s'ouvre (accessibilité clavier)
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [isOpen]);
 
   // Gestion de la soumission du formulaire
   const handleContact = (e) => {
     e.preventDefault(); // Empêche le rechargement de la page
+
+    // Affichage des données dans la console (à remplacer par un vrai traitement)
     console.log("Données de contact :");
     console.log("Prénom:", firstName);
     console.log("Nom:", lastName);
     console.log("Email:", email);
     console.log("Message:", message);
-    closeModal(); // Ferme la modale après envoi
+
+    // Ferme la modale après soumission
+    closeModal();
   };
 
   return (
     <>
-      {/* Bouton qui ouvre la modale */}
+      {/* Bouton pour ouvrir la modale */}
       <button
         className="contact-btn"
         onClick={openModal}
@@ -41,15 +78,19 @@ export default function ContactModal({ photographerName }) {
 
       {/* Affichage conditionnel de la modale */}
       {isOpen && (
-        // Overlay — clic en dehors ferme la modale
         <div
           className="modal-overlay"
-          onClick={closeModal}
+          onClick={closeModal} // Ferme la modale si clic en dehors
           role="dialog"
           aria-modal="true"
         >
-          {/* Contenu de la modale — stopPropagation évite la fermeture au clic intérieur */}
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          {/* Conteneur de la modale */}
+          <div
+            className="modal"
+            ref={modalRef}
+            tabIndex="-1" // Permet de recevoir le focus clavier
+            onClick={(e) => e.stopPropagation()} // Empêche la fermeture au clic intérieur
+          >
             {/* Bouton de fermeture */}
             <button
               className="modal-close"
@@ -59,6 +100,7 @@ export default function ContactModal({ photographerName }) {
               ✕
             </button>
 
+            {/* Titre de la modale */}
             <h2>
               Contactez-moi
               <br />
@@ -107,7 +149,7 @@ export default function ContactModal({ photographerName }) {
                 required
               />
 
-              {/* Bouton de soumission */}
+              {/* Bouton d'envoi */}
               <button type="submit" className="submit-btn">
                 Envoyer
               </button>
