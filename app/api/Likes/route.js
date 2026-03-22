@@ -1,7 +1,11 @@
-import { updateNumberOfLikes } from '../../lib/prisma-db';
+import { updateNumberOfLikes } from "../../lib/prisma-db";
 
 export async function PUT(request) {
-  const { mediaId, likes } = await request.json();
-  await updateNumberOfLikes(mediaId, likes);
+  const { mediaId, change } = await request.json();
+
+  console.log("API radi:", mediaId, change);
+
+  await updateNumberOfLikes(mediaId, change);
+
   return Response.json({ success: true });
 }

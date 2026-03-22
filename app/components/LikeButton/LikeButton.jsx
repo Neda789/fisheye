@@ -3,40 +3,49 @@
 import { useState } from "react";
 import Image from "next/image";
 
-// Composant bouton like — reçoit l'id du média, le nombre initial de likes et un callback parent
+// Bouton Like avec compteur et toggle
 export default function LikeButton({ mediaId, initialLikes, onLikeChange }) {
-  // État du nombre de likes affiché
-  const [likes, setLikes] = useState(initialLikes);
+  const [likes, setLikes] = useState(initialLikes); // État du nombre de likes
+  const [liked, setLiked] = useState(false); // État du toggle Like
 
-  // État pour savoir si l'utilisateur a déjà liké ce média
-  const [liked, setLiked] = useState(false);
-
-  // Gestion du clic sur le bouton like/unlike
+  // Gestion du clic sur le bouton Like
   const handleLike = async () => {
     const change = liked ? -1 : 1; // +1 si like, -1 si unlike
     const newLikes = likes + change;
 
-    setLikes(newLikes); // Met à jour l'affichage local
-    setLiked(!liked); // Inverse l'état liked
-    onLikeChange(change); // Informe le composant parent du changement
+    // Mise à jour optimiste côté client
+    setLikes(newLikes);
+    setLiked(!liked);
+    onLikeChange(change); // Notifie le parent
 
-    // Envoie la mise à jour au serveur via l'API
-    await fetch(`/api/likes`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mediaId, likes: newLikes }),
-    });
+    try {
+      // Appel API pour sauvegarder le changement dans la base
+      const response = await fetch(`/api/likes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaId, change }),
+      });
+
+      if (!response.ok)
+        throw new Error("Erreur serveur lors de la mise à jour des likes.");
+    } catch (error) {
+      // Rollback en cas d'erreur
+      setLikes(likes);
+      setLiked(liked);
+      onLikeChange(-change);
+      console.error(error);
+      alert("Une erreur est survenue. Merci de réessayer !");
+    }
   };
 
   return (
-    // Bouton accessible avec aria-label indiquant le nombre de likes
     <button
       className="like-btn"
       onClick={handleLike}
-      aria-label={`${likes} likes`}
+      aria-label={`${likes} likes`} // Description pour lecteurs d'écran
+      aria-pressed={liked} // Indique si le bouton est actif
     >
       {likes}
-      {/* Icône cœur */}
       <Image src="/assets/Hart.png" alt="like" width={12} height={12} />
     </button>
   );

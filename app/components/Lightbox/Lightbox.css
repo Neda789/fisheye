@@ -124,3 +124,39 @@
   align-items: center;
   gap: 5px;
 }
+
+/* ── fokus navigacija ── */
+.media-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  position: relative;
+  border-radius: 5px;
+  outline: none;
+}
+
+.media-btn:focus .media-image,
+.media-btn:focus .media-video {
+  box-shadow: 0 0 0 5px #901c1c !important;
+  outline: 3px solid #fff !important;
+  outline-offset: -3px !important;
+}
+
+.media-btn:focus::after {
+  
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #901c1c;
+  color: #fafafa;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 999px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}

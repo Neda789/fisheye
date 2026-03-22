@@ -1,11 +1,11 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import "./ContactModal.css";
 
-// Composant de modale de contact
-// Reçoit le nom du photographe en propriété (prop)
+// Composant de modal de contact pour un photographe
 export default function ContactModal({ photographerName }) {
-  // État pour gérer l'ouverture et la fermeture de la modale
+  // État pour gérer l'ouverture de la modal
   const [isOpen, setIsOpen] = useState(false);
 
   // États pour stocker les valeurs des champs du formulaire
@@ -14,60 +14,68 @@ export default function ContactModal({ photographerName }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
-  // Référence vers la modale pour gérer le focus (accessibilité)
+  // Référence vers la modal pour le focus et trap clavier
   const modalRef = useRef(null);
 
-  // Fonction pour ouvrir la modale
+  // Fonctions pour ouvrir et fermer la modal
   const openModal = () => setIsOpen(true);
-
-  // Fonction pour fermer la modale
   const closeModal = () => setIsOpen(false);
 
-  // Gestion de la touche ESC pour fermer la modale
+  // Fermeture de la modal avec la touche ESC
   useEffect(() => {
     const handleEsc = (event) => {
-      // Vérifie si la touche pressée est "Escape"
-      if (event.key === "Escape") {
-        closeModal();
+      if (event.key === "Escape") closeModal();
+    };
+
+    if (isOpen) document.addEventListener("keydown", handleEsc);
+
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [isOpen]);
+
+  // Gestion du focus et "tab trap" pour accessibilité clavier
+  useEffect(() => {
+    if (!isOpen || !modalRef.current) return;
+
+    // Sélectionne tous les éléments focusables
+    const focusable = modalRef.current.querySelectorAll(
+      "button, input, textarea",
+    );
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    // Met le focus sur la modal à l'ouverture
+    modalRef.current.focus();
+
+    const handleTab = (e) => {
+      if (e.key !== "Tab") return;
+
+      // Si Shift + Tab sur le premier élément, boucle vers le dernier
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+      // Si Tab sur le dernier élément, boucle vers le premier
+      else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
 
-    // Ajoute l'écouteur uniquement si la modale est ouverte
-    if (isOpen) {
-      document.addEventListener("keydown", handleEsc);
-    }
-
-    // Nettoyage de l'écouteur pour éviter les fuites mémoire
-    return () => {
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [isOpen]);
-
-  // Met le focus sur la modale lorsqu'elle s'ouvre (accessibilité clavier)
-  useEffect(() => {
-    if (isOpen && modalRef.current) {
-      modalRef.current.focus();
-    }
+    document.addEventListener("keydown", handleTab);
+    return () => document.removeEventListener("keydown", handleTab);
   }, [isOpen]);
 
   // Gestion de la soumission du formulaire
   const handleContact = (e) => {
-    e.preventDefault(); // Empêche le rechargement de la page
-
-    // Affichage des données dans la console (à remplacer par un vrai traitement)
-    console.log("Données de contact :");
-    console.log("Prénom:", firstName);
-    console.log("Nom:", lastName);
-    console.log("Email:", email);
-    console.log("Message:", message);
-
-    // Ferme la modale après soumission
+    e.preventDefault();
+    // Ici tu pourrais envoyer les données vers un serveur
     closeModal();
   };
 
   return (
     <>
-      {/* Bouton pour ouvrir la modale */}
+      {/* Bouton pour ouvrir la modal */}
       <button
         className="contact-btn"
         onClick={openModal}
@@ -76,20 +84,19 @@ export default function ContactModal({ photographerName }) {
         Contactez-moi
       </button>
 
-      {/* Affichage conditionnel de la modale */}
+      {/* Affichage conditionnel de la modal */}
       {isOpen && (
         <div
           className="modal-overlay"
-          onClick={closeModal} // Ferme la modale si clic en dehors
+          onClick={closeModal} // Ferme si clic en dehors
           role="dialog"
           aria-modal="true"
         >
-          {/* Conteneur de la modale */}
           <div
             className="modal"
             ref={modalRef}
-            tabIndex="-1" // Permet de recevoir le focus clavier
-            onClick={(e) => e.stopPropagation()} // Empêche la fermeture au clic intérieur
+            tabIndex="0"
+            onClick={(e) => e.stopPropagation()} // Empêche la fermeture si clic à l'intérieur
           >
             {/* Bouton de fermeture */}
             <button
@@ -100,7 +107,7 @@ export default function ContactModal({ photographerName }) {
               ✕
             </button>
 
-            {/* Titre de la modale */}
+            {/* Titre de la modal */}
             <h2>
               Contactez-moi
               <br />
@@ -109,7 +116,6 @@ export default function ContactModal({ photographerName }) {
 
             {/* Formulaire de contact */}
             <form onSubmit={handleContact}>
-              {/* Champ prénom */}
               <label htmlFor="firstname">Prénom</label>
               <input
                 id="firstname"
@@ -119,7 +125,6 @@ export default function ContactModal({ photographerName }) {
                 required
               />
 
-              {/* Champ nom */}
               <label htmlFor="lastname">Nom</label>
               <input
                 id="lastname"
@@ -129,7 +134,6 @@ export default function ContactModal({ photographerName }) {
                 required
               />
 
-              {/* Champ email */}
               <label htmlFor="email">Email</label>
               <input
                 id="email"
@@ -139,7 +143,6 @@ export default function ContactModal({ photographerName }) {
                 required
               />
 
-              {/* Champ message */}
               <label htmlFor="message">Votre Message</label>
               <textarea
                 id="message"

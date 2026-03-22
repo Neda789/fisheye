@@ -2,41 +2,43 @@ import {
   getPhotographer,
   getAllMediasForPhotographer,
 } from "../../lib/prisma-db";
-import Image from "next/image";
 import ContactModal from "../../components/ContactModal/ContactModal";
 import Lightbox from "../../components/Lightbox/Lightbox";
 
-// Page de détail d'un photographe — composant serveur asynchrone
+// Composant de page pour afficher le profil d'un photographe
 export default async function PhotographerPage({ params }) {
-  // Récupère l'identifiant depuis les paramètres de l'URL et le convertit en entier
+  // Récupère l'id passé dans les paramètres
   const { id: idParam } = await params;
   const id = parseInt(idParam);
 
-  // Récupère les données du photographe et de ses médias depuis la base de données
+  // Récupère les données du photographe depuis la base de données
   const photographer = await getPhotographer(id);
+  // Récupère tous les médias associés à ce photographe
   const medias = await getAllMediasForPhotographer(id);
 
   return (
     <main id="main-content">
-      {/* Section d'en-tête avec les informations du photographe */}
+      {/* Section avec les informations du photographe */}
       <section
         className="photographer-info"
         aria-label={`Profil de ${photographer.name}`}
       >
-        {/* Texte : nom, ville et slogan */}
         <div className="photographer-info-text">
+          {/* Nom du photographe */}
           <h2>{photographer.name}</h2>
+          {/* Ville et pays */}
           <p className="city">
             {photographer.city}, {photographer.country}
           </p>
+          {/* Slogan ou tagline */}
           <p>{photographer.tagline}</p>
         </div>
 
-        {/* Modale de contact — reçoit le nom du photographe */}
+        {/* Bouton et modal de contact */}
         <ContactModal photographerName={photographer.name} />
 
-        {/* Portrait du photographe */}
-        <Image
+        {/* Portrait du photographe — img utilisé car onError ne fonctionne pas dans les Server Components */}
+        <img
           src={`/assets/${photographer.portrait}`}
           alt={`Portrait de ${photographer.name}`}
           width={200}
@@ -45,7 +47,7 @@ export default async function PhotographerPage({ params }) {
         />
       </section>
 
-      {/* Galerie de médias avec lightbox et filtres */}
+      {/* Lightbox pour afficher les médias */}
       <Lightbox medias={medias} />
     </main>
   );

@@ -18,9 +18,9 @@ export const getAllMediasForPhotographer = (photographerId) =>
     where: { photographerId },
   });
 
-// Met à jour le nombre de likes d'un média spécifique
-export const updateNumberOfLikes = (mediaId, newNumberOfLikes) =>
+// Met à jour le nombre de likes d'un média spécifique (ajout ou retrait)
+export const updateNumberOfLikes = (mediaId, change) =>
   prisma.media.update({
     where: { id: mediaId },
-    data: { likes: newNumberOfLikes },
+    data: { likes: { increment: change } }, // +1 ou -1
   });

@@ -1,35 +1,35 @@
 "use client";
 import { useState } from "react";
 
-// Composant de filtrage — reçoit la liste des médias et une fonction de callback pour le tri
+// Composant pour filtrer et trier les médias
 export default function Filters({ medias, onSort }) {
-  // État du critère de tri actif (par défaut : popularité)
+  // État pour le critère de tri actuel (likes, date, titre)
   const [sortBy, setSortBy] = useState("likes");
 
-  // État pour contrôler l'ouverture/fermeture du menu déroulant
+  // État pour savoir si le menu déroulant est ouvert ou fermé
   const [isOpen, setIsOpen] = useState(false);
 
-  // Liste des options de tri disponibles
+  // Options de tri disponibles
   const options = [
     { value: "likes", label: "Popularité" },
     { value: "date", label: "Date" },
     { value: "title", label: "Titre" },
   ];
 
-  // Gestion du tri au clic sur une option
+  // Fonction pour trier les médias selon le critère sélectionné
   const handleSort = (value) => {
     setSortBy(value); // Met à jour le critère actif
-    setIsOpen(false); // Ferme le menu déroulant
+    setIsOpen(false); // Ferme le menu déroulant après sélection
 
-    // Crée une copie triée du tableau de médias selon le critère choisi
+    // Copie et tri des médias selon le critère choisi
     const sorted = [...medias].sort((a, b) => {
-      if (value === "likes") return b.likes - a.likes; // Tri par popularité décroissante
-      if (value === "date") return new Date(b.date) - new Date(a.date); // Tri par date décroissante
-      if (value === "title") return a.title.localeCompare(b.title); // Tri alphabétique
+      if (value === "likes") return b.likes - a.likes; // Tri par popularité (likes décroissant)
+      if (value === "date") return new Date(b.date) - new Date(a.date); // Tri par date (la plus récente d'abord)
+      if (value === "title") return a.title.localeCompare(b.title); // Tri par titre (ordre alphabétique)
       return 0;
     });
 
-    // Envoie le tableau trié au composant parent
+    // Envoi des médias triés au composant parent
     onSort(sorted);
   };
 
@@ -38,44 +38,40 @@ export default function Filters({ medias, onSort }) {
 
   return (
     <div className="sort-container">
-      {/* Label accessible lié au bouton via aria-labelledby */}
+      {/* Label du menu de tri */}
       <span id="sort-label" className="sort-label">
         Trier par
       </span>
 
-      {/* Menu déroulant personnalisé — classe is-open ajoutée dynamiquement */}
+      {/* Menu déroulant personnalisé */}
       <div className={`custom-select ${isOpen ? "is-open" : ""}`}>
-        {/* Bouton principal qui affiche l'option sélectionnée */}
+        {/* Bouton principal qui ouvre/ferme le menu */}
         <button
           className="select-button"
           onClick={() => setIsOpen(!isOpen)}
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          aria-labelledby="sort-label"
+          aria-haspopup="listbox" // Indique que c'est un menu
+          aria-expanded={isOpen} // Accessibilité : menu ouvert ou fermé
+          aria-labelledby="sort-label" // Label pour les lecteurs d'écran
         >
-          {currentLabel}
-          {/* Flèche qui change de direction selon l'état du menu */}
-          <span className={`arrow ${isOpen ? "up" : "down"}`}></span>
+          {currentLabel} {/* Affiche le critère sélectionné */}
+          <span className={`arrow ${isOpen ? "up" : "down"}`}></span>{" "}
+          {/* Flèche indiquant l'état */}
         </button>
 
-        {/* Liste des options — affichée uniquement si le menu est ouvert */}
+        {/* Liste des options (affichée seulement si le menu est ouvert) */}
         {isOpen && (
           <div className="options-list" role="listbox">
             {options
-              .filter((option) => option.value !== sortBy) // Masque l'option déjà sélectionnée
+              .filter((option) => option.value !== sortBy) // On n'affiche pas l'option déjà sélectionnée
               .map((option) => (
-                <div
+                <button
                   key={option.value}
                   className="option-item"
                   role="option"
-                  tabIndex={0} // Permet la navigation au clavier
-                  onClick={() => handleSort(option.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && handleSort(option.value)
-                  } // Sélection via la touche Entrée
+                  onClick={() => handleSort(option.value)} // Trie quand on clique sur une option
                 >
                   {option.label}
-                </div>
+                </button>
               ))}
           </div>
         )}
