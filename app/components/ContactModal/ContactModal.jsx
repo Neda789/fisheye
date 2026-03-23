@@ -69,6 +69,12 @@ export default function ContactModal({ photographerName }) {
   // Gestion de la soumission du formulaire
   const handleContact = (e) => {
     e.preventDefault();
+    console.log("Contact Form Submitted:", {
+      firstName,
+      lastName,
+      email,
+      message,
+    });
     // Ici tu pourrais envoyer les données vers un serveur
     closeModal();
   };
