@@ -18,15 +18,16 @@ body {
   font-family: "DM Sans", sans-serif;
   background-color: var(--light);
   color: var(--dark);
+  /* Ajout min/max width pour tout le site */
   max-width: 1200px;
   min-width: 800px;
+  margin: 0 auto;
 }
 
 a {
   text-decoration: none;
   color: inherit;
 }
-
 
 .header {
   background-color: var(--light);
@@ -52,7 +53,6 @@ h1 {
   color: #901c1c;
   margin: 0;
 }
-
 
 .photographer-info {
   display: flex;
@@ -85,7 +85,6 @@ p.city {
   width: 200px;
   height: 200px;
 }
-
 
 .sort-container {
   display: flex;
@@ -156,7 +155,6 @@ p.city {
   background-color: var(--secondary);
 }
 
-
 .gallery {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -183,7 +181,6 @@ p.city {
   color: var(--primary);
 }
 
-
 .media-btn {
   background: none;
   border: none;
@@ -192,7 +189,6 @@ p.city {
   display: block;
   width: 100%;
 }
-
 
 .media-btn:focus .media-image,
 .media-btn:focus .media-video {
@@ -203,12 +199,10 @@ p.city {
   display: none !important;
 }
 
-
 .media-btn:focus-visible {
   outline: 2px solid var(--secondary);
   outline-offset: 3px;
 }
-
 
 .sticky-bar {
   position: fixed;
@@ -227,7 +221,6 @@ p.city {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 80px;
-
   margin: 0 auto;
 }
 

@@ -35,13 +35,16 @@
   display: flex;
   align-items: center;
   width: 800px;
+  height: 500px;
   justify-content: center;
 }
 
+
 .lightbox-media,
+.lightbox img,
 .lightbox video {
-  width: 100%;
-  height: 500px;
+  width: 800px !important;
+  height: 500px !important;
   object-fit: cover;
   border-radius: 5px;
 }
@@ -125,7 +128,6 @@
   gap: 5px;
 }
 
-
 .media-btn {
   background: none;
   border: none;
@@ -137,17 +139,14 @@
   transition: outline 0.1s ease-in-out;
 }
 
-
 .media-btn:focus .media-image,
 .media-btn:focus .media-video {
   box-shadow: none !important;
 }
 
-
 .media-btn:focus::after {
   display: none;
 }
-
 
 .media-btn:focus-visible {
   outline: 2px solid var(--dark); 
