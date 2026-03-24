@@ -125,7 +125,7 @@
   gap: 5px;
 }
 
-/* ── fokus navigacija ── */
+
 .media-btn {
   background: none;
   border: none;
@@ -134,29 +134,22 @@
   display: block;
   position: relative;
   border-radius: 5px;
-  outline: none;
+  transition: outline 0.1s ease-in-out;
 }
+
 
 .media-btn:focus .media-image,
 .media-btn:focus .media-video {
-  box-shadow: 0 0 0 5px #901c1c !important;
-  outline: 3px solid #fff !important;
-  outline-offset: -3px !important;
+  box-shadow: none !important;
 }
 
+
 .media-btn:focus::after {
-  
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #901c1c;
-  color: #fafafa;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 3px 12px;
-  border-radius: 999px;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 10;
+  display: none;
+}
+
+
+.media-btn:focus-visible {
+  outline: 2px solid var(--dark); 
+  outline-offset: 3px;
 }

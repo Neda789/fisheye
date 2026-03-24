@@ -1,55 +1,47 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import LikeButton from "../LikeButton/LikeButton";
 import Filters from "../Filters/Filters";
 import "./Lightbox.css";
 
-// Composant Lightbox pour afficher les médias d'un photographe
+/**
+ * Composant Lightbox pour afficher la galerie et gérer le tri ainsi que le modal
+ */
 export default function Lightbox({ medias }) {
-  // États principaux
-  const [sortedMedias, setSortedMedias] = useState(medias); // Médias triés
-  const [currentIndex, setCurrentIndex] = useState(null); // Index du média affiché dans la lightbox
+  // --- ÉTATS PRINCIPAUX (States) ---
+  // État pour les médias triés, l'index actuel du modal et le total des likes
+  const [sortedMedias, setSortedMedias] = useState(medias);
+  const [currentIndex, setCurrentIndex] = useState(null);
   const [totalLikes, setTotalLikes] = useState(
     medias.reduce((sum, media) => sum + media.likes, 0),
-  ); // Total de likes
-  const [errorMessage, setErrorMessage] = useState(""); // Message d'erreur pour média non chargé
+  );
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Ouvrir et fermer la lightbox
+  // --- ACTIONS DU MODAL ---
+  // Fonctions pour ouvrir et fermer la vue agrandie (lightbox)
   const openLightbox = (index) => setCurrentIndex(index);
   const closeLightbox = () => setCurrentIndex(null);
 
-  // Gestion des likes
+  // --- GESTION DES LIKES ---
+  // Met à jour le compteur global situé dans la barre collante (sticky-bar)
   const handleLikeChange = (change) => {
     setTotalLikes((prev) => prev + change);
   };
 
-  // Ajoute focus/blur et gestion clavier sur les boutons médias (accessibilité)
+  // --- ACCESSIBILITÉ CLAVIER (GALLERIE) ---
+  // Gère la navigation entre les éléments de la galerie avec les flèches et la touche Entrée
   useEffect(() => {
     const buttons = document.querySelectorAll(".media-btn");
-
-    const handleFocus = (e) => {
-      const img = e.currentTarget.querySelector("img, video");
-      if (img) {
-        img.style.boxShadow = "0 0 0 5px #901c1c";
-        img.style.outline = "3px solid #fff";
-        img.style.outlineOffset = "-3px";
-      }
-    };
-
-    const handleBlur = (e) => {
-      const img = e.currentTarget.querySelector("img, video");
-      if (img) {
-        img.style.boxShadow = "";
-        img.style.outline = "";
-        img.style.outlineOffset = "";
-      }
-    };
 
     const handleKeyDown = (e) => {
       const items = [...document.querySelectorAll(".media-btn")];
       const idx = items.indexOf(e.currentTarget);
-      if (e.key === "Enter") openLightbox(idx);
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        openLightbox(idx);
+      }
       if (e.key === "ArrowRight") {
         e.preventDefault();
         if (idx < items.length - 1) items[idx + 1].focus();
@@ -61,21 +53,18 @@ export default function Lightbox({ medias }) {
     };
 
     buttons.forEach((btn) => {
-      btn.addEventListener("focus", handleFocus);
-      btn.addEventListener("blur", handleBlur);
       btn.addEventListener("keydown", handleKeyDown);
     });
 
     return () => {
       buttons.forEach((btn) => {
-        btn.removeEventListener("focus", handleFocus);
-        btn.removeEventListener("blur", handleBlur);
         btn.removeEventListener("keydown", handleKeyDown);
       });
     };
   }, [sortedMedias]);
 
-  // Navigation clavier pour la lightbox
+  // --- NAVIGATION CLAVIER (LIGHTBOX) ---
+  // Gère le défilement des images et la fermeture avec 'Escape' une fois le modal ouvert
   useEffect(() => {
     const handleKey = (e) => {
       if (currentIndex === null) return;
@@ -85,7 +74,7 @@ export default function Lightbox({ medias }) {
         setCurrentIndex(
           (prev) => (prev - 1 + sortedMedias.length) % sortedMedias.length,
         );
-      if (e.key === "Escape") setCurrentIndex(null);
+      if (e.key === "Escape") closeLightbox();
     };
 
     window.addEventListener("keydown", handleKey);
@@ -94,10 +83,10 @@ export default function Lightbox({ medias }) {
 
   return (
     <>
-      {/* Composant pour trier/filtrer les médias */}
+      {/* Composant de filtrage qui renvoie les médias triés */}
       <Filters medias={medias} onSort={setSortedMedias} />
 
-      {/* Galerie de médias */}
+      {/* Section principale de la galerie d'images et vidéos */}
       <section className="gallery" aria-label="Galerie photos">
         {sortedMedias.map((media, index) => (
           <div key={media.id} className="media-item">
@@ -113,29 +102,15 @@ export default function Lightbox({ medias }) {
                   width={310}
                   height={260}
                   className="media-image"
-                  onError={(e) => {
-                    e.currentTarget.src = "/assets/placeholder.png";
-                    setErrorMessage(
-                      `Impossible de charger l'image ${media.title}`,
-                    );
-                  }}
                 />
               ) : (
-                <video
-                  className="media-video"
-                  aria-label={media.title}
-                  onError={() =>
-                    setErrorMessage(
-                      `Impossible de charger la vidéo ${media.title}`,
-                    )
-                  }
-                >
+                <video className="media-video" aria-label={media.title}>
                   <source src={`/assets/${media.video}`} />
                 </video>
               )}
             </button>
 
-            {/* Footer média avec titre et bouton like */}
+            {/* Pied de page du média avec titre et bouton like */}
             <div className="media-footer">
               <p>{media.title}</p>
               <LikeButton
@@ -148,14 +123,14 @@ export default function Lightbox({ medias }) {
         ))}
       </section>
 
-      {/* Message d'erreur */}
+      {/* Affichage des erreurs si nécessaire */}
       {errorMessage && (
         <div className="error-message" role="alert">
           {errorMessage}
         </div>
       )}
 
-      {/* Barre sticky avec total likes et prix */}
+      {/* Barre d'information fixe : total des likes et prix journalier */}
       <div
         className="sticky-bar"
         role="complementary"
@@ -168,26 +143,22 @@ export default function Lightbox({ medias }) {
         <span>{sortedMedias[0]?.price}€/jour</span>
       </div>
 
-      {/* Lightbox overlay */}
+      {/* Structure du modal Lightbox (uniquement si currentIndex est défini) */}
       {currentIndex !== null && (
         <div
           className="lightbox-overlay"
           onClick={closeLightbox}
           role="dialog"
           aria-modal="true"
-          aria-label={`Image: ${sortedMedias[currentIndex].title}`}
         >
           <div className="lightbox" onClick={(e) => e.stopPropagation()}>
-            {/* Bouton fermeture */}
             <button
               className="lightbox-close"
               onClick={closeLightbox}
-              aria-label="Fermer la lightbox"
+              aria-label="Fermer la modale"
             >
               ✕
             </button>
-
-            {/* Navigation précédente */}
             <button
               className="lightbox-prev"
               onClick={() =>
@@ -196,55 +167,32 @@ export default function Lightbox({ medias }) {
                     (prev - 1 + sortedMedias.length) % sortedMedias.length,
                 )
               }
-              aria-label="Image précédente"
             >
               ‹
             </button>
 
-            {/* Média affiché */}
-            {sortedMedias[currentIndex].image ? (
-              <img
-                src={`/assets/${sortedMedias[currentIndex].image}`}
-                alt={sortedMedias[currentIndex].title}
-                width={800}
-                height={600}
-                className="lightbox-media"
-                onError={(e) => {
-                  e.currentTarget.src = "/assets/placeholder.png";
-                  setErrorMessage(
-                    `Impossible de charger l'image ${sortedMedias[currentIndex].title}`,
-                  );
-                }}
-              />
-            ) : (
-              <video
-                width={800}
-                height={600}
-                controls
-                autoPlay
-                aria-label={sortedMedias[currentIndex].title}
-                onError={() =>
-                  setErrorMessage(
-                    `Impossible de charger la vidéo ${sortedMedias[currentIndex].title}`,
-                  )
-                }
-              >
-                <source src={`/assets/${sortedMedias[currentIndex].video}`} />
-              </video>
-            )}
+            <div className="lightbox-content">
+              {sortedMedias[currentIndex].image ? (
+                <img
+                  src={`/assets/${sortedMedias[currentIndex].image}`}
+                  alt=""
+                  className="lightbox-media"
+                />
+              ) : (
+                <video width={800} height={600} controls autoPlay>
+                  <source src={`/assets/${sortedMedias[currentIndex].video}`} />
+                </video>
+              )}
+            </div>
 
-            {/* Navigation suivante */}
             <button
               className="lightbox-next"
               onClick={() =>
                 setCurrentIndex((prev) => (prev + 1) % sortedMedias.length)
               }
-              aria-label="Image suivante"
             >
               ›
             </button>
-
-            {/* Titre du média */}
             <p className="lightbox-title">{sortedMedias[currentIndex].title}</p>
           </div>
         </div>

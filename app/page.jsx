@@ -7,7 +7,7 @@ export default async function Home() {
   const photographers = await getAllPhotographers();
 
   return (
-    <main id="main-content">
+    <main id="main-content2">
       {/* Grille de toutes les cartes photographes */}
       <section
         className="photographers-list"
