@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import LikeButton from "../LikeButton/LikeButton";
 import Filters from "../Filters/Filters";
 import "./Lightbox.css";
@@ -10,7 +10,6 @@ import "./Lightbox.css";
  */
 export default function Lightbox({ medias }) {
   // --- ÉTATS PRINCIPAUX (States) ---
-  // État pour les médias triés, l'index actuel du modal et le total des likes
   const [sortedMedias, setSortedMedias] = useState(medias);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [totalLikes, setTotalLikes] = useState(
@@ -18,19 +17,19 @@ export default function Lightbox({ medias }) {
   );
   const [errorMessage, setErrorMessage] = useState("");
 
+  // ✅ REF za modal
+  const lightboxRef = useRef(null);
+
   // --- ACTIONS DU MODAL ---
-  // Fonctions pour ouvrir et fermer la vue agrandie (lightbox)
   const openLightbox = (index) => setCurrentIndex(index);
   const closeLightbox = () => setCurrentIndex(null);
 
   // --- GESTION DES LIKES ---
-  // Met à jour le compteur global situé dans la barre collante (sticky-bar)
   const handleLikeChange = (change) => {
     setTotalLikes((prev) => prev + change);
   };
 
   // --- ACCESSIBILITÉ CLAVIER (GALLERIE) ---
-  // Gère la navigation entre les éléments de la galerie avec les flèches et la touche Entrée
   useEffect(() => {
     const buttons = document.querySelectorAll(".media-btn");
 
@@ -64,7 +63,6 @@ export default function Lightbox({ medias }) {
   }, [sortedMedias]);
 
   // --- NAVIGATION CLAVIER (LIGHTBOX) ---
-  // Gère le défilement des images et la fermeture avec 'Escape' une fois le modal ouvert
   useEffect(() => {
     const handleKey = (e) => {
       if (currentIndex === null) return;
@@ -81,12 +79,39 @@ export default function Lightbox({ medias }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [currentIndex, sortedMedias.length]);
 
+  // ✅ FOCUS TRAP
+  useEffect(() => {
+    if (currentIndex === null || !lightboxRef.current) return;
+
+    const focusable = lightboxRef.current.querySelectorAll(
+      "button, img, video"
+    );
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    lightboxRef.current.focus();
+
+    const handleTab = (e) => {
+      if (e.key !== "Tab") return;
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTab);
+    return () => document.removeEventListener("keydown", handleTab);
+  }, [currentIndex]);
+
   return (
     <>
-      {/* Composant de filtrage qui renvoie les médias triés */}
       <Filters medias={medias} onSort={setSortedMedias} />
 
-      {/* Section principale de la galerie d'images et vidéos */}
       <section className="gallery" aria-label="Galerie photos">
         {sortedMedias.map((media, index) => (
           <div key={media.id} className="media-item">
@@ -110,7 +135,6 @@ export default function Lightbox({ medias }) {
               )}
             </button>
 
-            {/* Pied de page du média avec titre et bouton like */}
             <div className="media-footer">
               <p>{media.title}</p>
               <LikeButton
@@ -123,14 +147,12 @@ export default function Lightbox({ medias }) {
         ))}
       </section>
 
-      {/* Affichage des erreurs si nécessaire */}
       {errorMessage && (
         <div className="error-message" role="alert">
           {errorMessage}
         </div>
       )}
 
-      {/* Barre d'information fixe : total des likes et prix journalier */}
       <div
         className="sticky-bar"
         role="complementary"
@@ -143,7 +165,6 @@ export default function Lightbox({ medias }) {
         <span>{sortedMedias[0]?.price}€/jour</span>
       </div>
 
-      {/* Structure du modal Lightbox (uniquement si currentIndex est défini) */}
       {currentIndex !== null && (
         <div
           className="lightbox-overlay"
@@ -151,7 +172,12 @@ export default function Lightbox({ medias }) {
           role="dialog"
           aria-modal="true"
         >
-          <div className="lightbox" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="lightbox"
+            ref={lightboxRef}
+            tabIndex="0"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               className="lightbox-close"
               onClick={closeLightbox}
@@ -159,6 +185,7 @@ export default function Lightbox({ medias }) {
             >
               ✕
             </button>
+
             <button
               className="lightbox-prev"
               onClick={() =>
@@ -175,12 +202,14 @@ export default function Lightbox({ medias }) {
               {sortedMedias[currentIndex].image ? (
                 <img
                   src={`/assets/${sortedMedias[currentIndex].image}`}
-                  alt=""
+                  alt={sortedMedias[currentIndex].title} // ✅ FIX
                   className="lightbox-media"
                 />
               ) : (
                 <video width={800} height={600} controls autoPlay>
-                  <source src={`/assets/${sortedMedias[currentIndex].video}`} />
+                  <source
+                    src={`/assets/${sortedMedias[currentIndex].video}`}
+                  />
                 </video>
               )}
             </div>
@@ -193,7 +222,10 @@ export default function Lightbox({ medias }) {
             >
               ›
             </button>
-            <p className="lightbox-title">{sortedMedias[currentIndex].title}</p>
+
+            <p className="lightbox-title">
+              {sortedMedias[currentIndex].title}
+            </p>
           </div>
         </div>
       )}

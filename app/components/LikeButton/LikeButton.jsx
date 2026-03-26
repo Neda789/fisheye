@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 // Bouton Like avec compteur et toggle
 export default function LikeButton({ mediaId, initialLikes, onLikeChange }) {
   const [likes, setLikes] = useState(initialLikes); // État du nombre de likes
   const [liked, setLiked] = useState(false); // État du toggle Like
+
+  //  PERSISTENCE (load)
+  useEffect(() => {
+    const saved = localStorage.getItem(`liked-${mediaId}`);
+    if (saved === "true") setLiked(true);
+  }, [mediaId]);
+
+  //  PERSISTENCE (save)
+  useEffect(() => {
+    localStorage.setItem(`liked-${mediaId}`, liked);
+  }, [liked, mediaId]);
 
   // Gestion du clic sur le bouton Like
   const handleLike = async () => {

@@ -1,11 +1,28 @@
 import { updateNumberOfLikes } from "../../lib/prisma-db";
 
 export async function PUT(request) {
-  const { mediaId, change } = await request.json();
+  try {
+    const { mediaId, change } = await request.json();
 
-  console.log("API radi:", mediaId, change);
+    console.log("API radi:", mediaId, change);
 
-  await updateNumberOfLikes(mediaId, change);
+   // Validate input
+    if (!mediaId || !change) {
+      return Response.json(
+        { error: "Missing mediaId or change" },
+        { status: 400 }
+      );
+    }
 
-  return Response.json({ success: true });
+    const updated = await updateNumberOfLikes(mediaId, change);
+
+    return Response.json({ success: true, data: updated }, { status: 200 });
+  } catch (error) {
+    console.error("API ERROR:", error);
+
+    return Response.json(
+      { error: "Server error while updating likes" },
+      { status: 500 }
+    );
+  }
 }
