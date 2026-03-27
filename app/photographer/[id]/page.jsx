@@ -4,7 +4,7 @@ import {
 } from "../../lib/prisma-db";
 import ContactModal from "../../components/ContactModal/ContactModal";
 import Lightbox from "../../components/Lightbox/Lightbox";
-import { notFound } from "next/navigation"; // <-- dodato za page error
+import { notFound } from "next/navigation"; // <-- ajouté pour gérer l'erreur de page
 
 // Composant de page pour afficher le profil d'un photographe
 export default async function PhotographerPage({ params }) {
@@ -15,9 +15,9 @@ export default async function PhotographerPage({ params }) {
   // Récupère les données du photographe depuis la base de données
   const photographer = await getPhotographer(id);
 
-  // Ako fotograf ne postoji, prikaži 404 stranicu
+  // Si le photographe n'existe pas, affiche la page 404
   if (!photographer) {
-    notFound(); // Next.js će prikazati 404
+    notFound(); // Next.js affichera la page 404
   }
 
   // Récupère tous les médias associés à ce photographe
