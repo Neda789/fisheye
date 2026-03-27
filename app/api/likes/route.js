@@ -4,9 +4,9 @@ export async function PUT(request) {
   try {
     const { mediaId, change } = await request.json();
 
-    console.log("API radi:", mediaId, change);
+    console.log("API work:", mediaId, change);
 
-   // Validate input
+   
     if (!mediaId || !change) {
       return Response.json(
         { error: "Missing mediaId or change" },
